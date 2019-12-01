@@ -16,6 +16,4 @@ def suite(TestClass):
 def run_test(TestClass):
     aoc_test_suite = suite(TestClass)
     runner = unittest.TextTestRunner()
-    result = runner.run(aoc_test_suite)
-    if not result.wasSuccessful():
-        print("Test failed")
+    runner.run(aoc_test_suite)
