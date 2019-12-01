@@ -28,6 +28,16 @@ Solve _day 1_, both parts:
 ./aoc1.py
 ```
 
+## Prepare solver for Nth day
+
+Replace N by the day (1-25). Then:
+
+```bash
+cp aoc0.py aocN.py
+cp test_aoc0.py test_aocN.py
+sed -i 's/oc0/ocN/g' aocN.py test_aocN.py
+```
+
 ## Copyright notice
 
-Copyright (C) 2019 Antonio Ceballos Roa <aceballos@gmail.com>
+Copyright (C) 2019 Antonio Ceballos Roa
