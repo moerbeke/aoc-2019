@@ -28,14 +28,12 @@ Solve _day 1_, both parts:
 ./aoc1.py
 ```
 
-## Prepare solver for Nth day
-
-Replace N by the day (1-25). Then:
+## Prepare solver for day 2
 
 ```bash
-cp aoc0.py aocN.py
-cp test_aoc0.py test_aocN.py
-sed -i 's/oc0/ocN/g' aocN.py test_aocN.py
+cp aoc0.py aoc2.py
+cp test_aoc0.py test_aoc2.py
+sed -i 's/oc0/oc2/g' aoc2.py test_aoc2.py
 ```
 
 ## Copyright notice
