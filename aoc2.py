@@ -16,8 +16,8 @@ class Aoc2(aocbase.AocBase):
 
     def __init__(self, read_default_input=True, input_filename=None, input_str=None):
         self._program = None
-        self._ptr = 0
-        self._halt = False
+        self._ptr = None
+        self._halt = None
         super().__init__(read_default_input, input_filename, input_str)
 
     def do_parse_input(self):
@@ -29,30 +29,35 @@ class Aoc2(aocbase.AocBase):
         self._halt = False
 
     def do_solve_1(self):
-        self._program[1] = 12
-        self._program[2] = 2
+        self.run(12, 2)
+        output = self._program[0]
+        return output
+
+    def run(self, noun=None, verb=None):
+        if noun is not None and verb is not None:
+            self.init(noun, verb)
         while not self._halt:
             self.step()
-        return self._program[0]
+
+    def init(self, noun, verb):
+        self._program[1] = noun
+        self._program[2] = verb
 
     def step(self):
         op_code = self._program[self._ptr]
-        if op_code == 1:
-            a = self._program[self._ptr + 1]
-            b = self._program[self._ptr + 2]
-            c = self._program[self._ptr + 3]
-            self._program[c] = self._program[a] + self._program[b]
-            self._ptr += 4
-        elif op_code == 2:
-            a = self._program[self._ptr + 1]
-            b = self._program[self._ptr + 2]
-            c = self._program[self._ptr + 3]
-            self._program[c] = self._program[a] * self._program[b]
-            self._ptr += 4
-        elif op_code == 99:
+        if op_code == 99:
             self._halt = True
         else:
-            assert(False)
+            a = self._program[self._ptr + 1]
+            b = self._program[self._ptr + 2]
+            c = self._program[self._ptr + 3]
+            if op_code == 1:
+                self._program[c] = self._program[a] + self._program[b]
+            elif op_code == 2:
+                self._program[c] = self._program[a] * self._program[b]
+            else:
+                assert(false)
+            self._ptr += 4
 
     @property
     def state(self):
@@ -63,19 +68,14 @@ class Aoc2(aocbase.AocBase):
         for noun in range(100):
             for verb in range(100):
                 self.reset()
-                self._program[1] = noun
-                self._program[2] = verb
-                while not self._halt:
-                    self.step()
-                if self._program[0] == 19690720:
+                self.run(noun, verb)
+                output = self._program[0]
+                if output == 19690720:
                     ok = True
                     break
             if ok:
                 break
-        if ok:
-            return 100 * noun + verb
-        else:
-            return
+        return 100 * noun + verb
 
 ########################################################################
 # main
