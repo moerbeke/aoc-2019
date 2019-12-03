@@ -58,7 +58,6 @@ class AocBase(abc.ABC):
 
     def solve_1(self, input_str=None):
         if input_str is not None:
-            self._input = input_str
             self.parse_input(input_str)
         else:
             self.parse_input()
@@ -66,7 +65,6 @@ class AocBase(abc.ABC):
 
     def solve_2(self, input_str=None):
         if input_str is not None:
-            self._input = input_str
             self.parse_input(input_str)
         else:
             self.parse_input()
