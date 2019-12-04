@@ -1,4 +1,4 @@
-# Advent of Code 2019
+# Advent of Code 2019 solver
 
 ## Run solver for day 1
 
