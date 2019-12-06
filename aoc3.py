@@ -60,22 +60,7 @@ def do_path(wire):
 def move(wire, x1, y1, steps, ins):
     direction = ins[0]
     ins_steps = int(ins[1:])
-    x2 = x1
-    y2 = y1
-    dx = 0
-    dy = 0
-    if direction == 'U':
-        y2 = y1 + ins_steps
-        dy = 1
-    elif direction == 'D':
-        y2 = y1 - ins_steps
-        dy = -1
-    elif direction == 'R':
-        x2 = x1 + ins_steps
-        dx = 1
-    elif direction == 'L':
-        x2 = x1 - ins_steps
-        dx = -1
+    x2, y2, dx, dy = get_next_step(x1, y1, direction, ins_steps)
     x = x1
     y = y1
     while not (x == x2 and y == y2):
@@ -85,6 +70,25 @@ def move(wire, x1, y1, steps, ins):
         _path[wire].add((x, y))
         _path_steps[wire][(x, y)] = steps
     return x2, y2, steps
+
+def get_next_step(x1, y1, direction, steps):
+    x2 = x1
+    y2 = y1
+    dx = 0
+    dy = 0
+    if direction == 'U':
+        y2 = y1 + steps
+        dy = 1
+    elif direction == 'D':
+        y2 = y1 - steps
+        dy = -1
+    elif direction == 'R':
+        x2 = x1 + steps
+        dx = 1
+    elif direction == 'L':
+        x2 = x1 - steps
+        dx = -1
+    return x2, y2, dx, dy
 
 def get_shortest_distance_steps(crosses):
     return min([_path_steps[0][(x,y)] + _path_steps[1][(x,y)] for x,y in crosses])
