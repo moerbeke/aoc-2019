@@ -28,14 +28,6 @@ Solve _day 1_, both parts:
 ./aoc1.py
 ```
 
-## Prepare solver for day 2
-
-```bash
-cp aoc0.py aoc2.py
-cp test_aoc0.py test_aoc2.py
-sed -i 's/oc0/oc2/g' aoc2.py test_aoc2.py
-```
-
 ## Copyright notice
 
 Copyright (C) 2019 Antonio Ceballos Roa
