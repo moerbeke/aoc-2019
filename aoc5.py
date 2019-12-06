@@ -12,6 +12,8 @@ day = 5
 # Algorithms
 ########################################################################
 
+from collections import namedtuple
+
 OP_HALT = 99
 OP_ADD = 1
 OP_MUL = 2
@@ -32,6 +34,8 @@ _halt = None
 _program_input = None
 _program_output = None
 
+P = namedtuple('P', ['addr', 'value'])
+
 def parse_input(input_str):
     global _program
     global _program_0
@@ -40,10 +44,9 @@ def parse_input(input_str):
 
 def reset():
     global _program
-    global _ptr
     global _halt
     _program = _program_0.copy()
-    _ptr = 0
+    set_ptr(0)
     _halt = False
 
 def solve_1():
@@ -65,98 +68,126 @@ def run_program(program_input):
 
 def run_ins():
     global _halt
-    global _ptr
     global _program_output
     modal_op_code = _program[_ptr]
-    if modal_op_code == OP_HALT:
-        _halt = True
-    else:
-        if modal_op_code == OP_INPUT:
-            _ptr += 1
-            a_addr = _program[_ptr]
-            _program[a_addr] = _program_input
-            _ptr += 1
-        elif modal_op_code % 10 == OP_OUTPUT:
-            op_code, a_mode, *ignore = get_op_parameter_modes(modal_op_code)
-            _ptr += 1
-            if a_mode == MODE_POSITION:
-                a_addr = _program[_ptr]
-                a = _program[a_addr]
-                _program_output = _program[a_addr]
-            else:
-                a_addr = None
-                a = _program[_ptr]
-                print("diagnostic code: %d" % a)
-            _ptr += 1
-        else:
-            op_code, a_mode, b_mode, c_mode = get_op_parameter_modes(modal_op_code)
-            _ptr += 1
-            if a_mode == MODE_POSITION:
-                a_addr = _program[_ptr]
-                a = _program[a_addr]
-            else:
-                a_addr = None
-                a = _program[_ptr]
-            _ptr += 1
-            if b_mode == MODE_POSITION:
-                b_addr = _program[_ptr]
-                b = _program[b_addr]
-            else:
-                b_addr = None
-                b = _program[_ptr]
-            if op_code == OP_ADD:
-                _ptr += 1
-                assert(c_mode == MODE_POSITION)
-                c_addr = _program[_ptr]
-                _program[c_addr] = a + b
-                _ptr += 1
-            elif op_code == OP_MUL:
-                _ptr += 1
-                assert(c_mode == MODE_POSITION)
-                c_addr = _program[_ptr]
-                _program[c_addr] = a * b
-                _ptr += 1
-            elif op_code == OP_LESS_THAN:
-                _ptr += 1
-                assert(c_mode == MODE_POSITION)
-                c_addr = _program[_ptr]
-                if a < b:
-                    _program[c_addr] = 1
-                else:
-                    _program[c_addr] = 0
-                _ptr += 1
-            elif op_code == OP_EQUALS:
-                _ptr += 1
-                assert(c_mode == MODE_POSITION)
-                c_addr = _program[_ptr]
-                if a == b:
-                    _program[c_addr] = 1
-                else:
-                    _program[c_addr] = 0
-                _ptr += 1
-            elif op_code == OP_JUMP_IF_TRUE:
-                if a != 0:
-                    _ptr = b
-                else:
-                    _ptr += 1
-            elif op_code == OP_JUMP_IF_FALSE:
-                if a == 0:
-                    _ptr = b
-                else:
-                    _ptr += 1
-            else:
-                assert(False)
+    op_code = get_op_code(modal_op_code)
+    try:
+        op[op_code](modal_op_code)
+    except KeyError:
+        assert(False)
 
-def get_op_parameter_modes(modal_op_code):
+def op_halt(modal_op_code):
+    global _halt
+    op_code = get_op_code(modal_op_code)
+    assert(op_code == modal_op_code)
+    _halt = True
+
+def op_input(modal_op_code):
+    a, *ignore = read_parameters(modal_op_code, 1)
+    _program[a.addr] = _program_input
+    incr_ptr()
+
+def op_output(modal_op_code):
+    global _program_output
+    a, *ignore = read_parameters(modal_op_code, 1)
+    if a.addr is None:
+        print("diagnostic code: %d" % a.value)
+    else:
+        _program_output = a.value
+    incr_ptr()
+
+def op_add(modal_op_code):
+    a, b, c = read_parameters(modal_op_code, 3)
+    _program[c.addr] = a.value + b.value
+    incr_ptr()
+
+def op_mul(modal_op_code):
+    a, b, c = read_parameters(modal_op_code, 3)
+    _program[c.addr] = a.value * b.value
+    incr_ptr()
+
+def op_less_than(modal_op_code):
+    a, b, c = read_parameters(modal_op_code, 3)
+    if a.value < b.value:
+        _program[c.addr] = 1
+    else:
+        _program[c.addr] = 0
+    incr_ptr()
+
+def op_equals(modal_op_code):
+    a, b, c = read_parameters(modal_op_code, 3)
+    if a.value == b.value:
+        _program[c.addr] = 1
+    else:
+        _program[c.addr] = 0
+    incr_ptr()
+
+def op_jump_if_true(modal_op_code):
+    a, b = read_parameters(modal_op_code, 2)
+    if a.value != 0:
+        set_ptr(b.value)
+    else:
+        incr_ptr()
+
+def op_jump_if_false(modal_op_code):
+    a, b = read_parameters(modal_op_code, 2)
+    if a.value == 0:
+        set_ptr(b.value)
+    else:
+        incr_ptr()
+
+op = {
+        OP_HALT:          op_halt,
+        OP_INPUT:         op_input,
+        OP_OUTPUT:        op_output,
+        OP_ADD:           op_add,
+        OP_MUL:           op_mul,
+        OP_LESS_THAN:     op_less_than,
+        OP_EQUALS:        op_equals,
+        OP_JUMP_IF_TRUE:  op_jump_if_true,
+        OP_JUMP_IF_FALSE: op_jump_if_false,
+        }
+
+def read_parameters(modal_op_code, n_params):
+    params = list()
+    modes = get_parameter_modes(modal_op_code)
+    n = 0
+    for n in range(n_params):
+        incr_ptr()
+        params.append(get_modal_param(modes[n]))
+    return params
+
+def get_modal_param(p_mode):
+    if p_mode == MODE_POSITION:
+        p_addr = _program[_ptr]
+        p_value = _program[p_addr]
+    else:
+        p_addr = None
+        p_value = _program[_ptr]
+    return P(p_addr, p_value)
+
+def get_op_code(modal_op_code):
     n = modal_op_code
     op_code = n % 100
+    return op_code
+
+def get_parameter_modes(modal_op_code):
+    n = modal_op_code
     n = n // 100
-    a_code = n % 10
+    a_mode = n % 10
     n = n // 10
-    b_code = n % 10
+    b_mode = n % 10
     n = n // 10
-    c_code = n % 10
-    return op_code, a_code, b_code, c_code
+    c_mode = n % 10
+    return a_mode, b_mode, c_mode
+
+def incr_ptr():
+    global _ptr
+    _ptr += 1
+
+def set_ptr(p):
+    global _ptr
+    _ptr = p
 
 
 ########################################################################
