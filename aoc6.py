@@ -12,69 +12,38 @@ day = 6
 # Algorithms
 ########################################################################
 
-_bodies = None
 _centers = None
 
 def parse_input(input_str):
-    global _bodies
     global _centers
-    _bodies = list()
     _centers = dict()
     for orbit in input_str.strip().split('\n'):
         c, b = orbit.split(')')
-        if c not in _bodies:
-            _bodies.append(c)
-        if b not in _bodies:
-            _bodies.append(b)
         _centers[b] = c
-
-def reset():
-    return
 
 def solve_1():
     n = 0
-    for b in _bodies:
-        while True:
-            try:
-                c = _centers[b]
-                n += 1
-            except KeyError:
-                break
-            b = c
+    for b in _centers:
+        n += len(get_body_centers(b))
     return n
 
 def solve_2():
-    you_cs = list()
-    b = 'YOU'
-    while True:
-        try:
-            c = _centers[b]
-            you_cs.append(c)
-        except KeyError:
-            break
-        b = c
-    san_cs = list()
-    b = 'SAN'
-    while True:
-        try:
-            c = _centers[b]
-            san_cs.append(c)
-        except KeyError:
-            break
-        b = c
-    n = 0
-    for c in you_cs:
-        if c not in san_cs:
-            n += 1
-        else:
-            break
-    for c in san_cs:
-        if c not in you_cs:
-            n += 1
-        else:
-            break
-    return n
+    you_cs = get_body_centers('YOU')
+    san_cs = get_body_centers('SAN')
+    n_you = sum(1 for c in you_cs if c not in san_cs)
+    n_san = sum(1 for c in san_cs if c not in you_cs)
+    return n_you + n_san
 
+def get_body_centers(b):
+    cs = list()
+    while True:
+        try:
+            c = _centers[b]
+            cs.append(c)
+        except KeyError:
+            break
+        b = c
+    return cs
 
 ########################################################################
 # main
