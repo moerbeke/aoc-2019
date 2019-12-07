@@ -15,9 +15,9 @@ day = 7
 import itertools
 
 def parse_input(input_str):
-    pass
+    aoc5_parse_input(input_str)
 
-def reset():
+def aoc7_reset():
     return
 
 def solve_1():
@@ -35,7 +35,7 @@ def solve_2():
     max_output_signal = 0
     phases = [5, 6, 7, 8, 9]
     for phases in list(itertools.permutations(phases)):
-        output_signal = run_amps_feedback(phases, input_signal)
+        output_signal = run_amps_closedloop(phases, input_signal)
         if output_signal > max_output_signal:
             max_output_signal = output_signal
     return max_output_signal
@@ -49,21 +49,19 @@ def run_amps(phases, input_signal):
 def run_amp(phase, input_signal):
     return run_program([phase, input_signal])
 
-def run_amps_feedback(phases, input_signal):
+def run_amps_closedloop(phases, input_signal):
     reset_feedback()
     halt = False
     l = 0
-    #print("Loop #%d" % l)
-    output_signal, halt = run_amps_first(phases, input_signal)
+    output_signal, halt = run_amps_firstloop(phases, input_signal)
     assert(not halt)
     while not halt:
         l += 1
-        #print("Loop #%d" % l)
         input_signal = output_signal
         output_signal, halt = run_amps_loop(input_signal)
     return output_signal
 
-def run_amps_first(phases, input_signal):
+def run_amps_firstloop(phases, input_signal):
     for i in range(len(phases)):
         output_signal, halt = run_amp_feedback(i, [phases[i], input_signal])
         input_signal = output_signal
@@ -110,7 +108,7 @@ _ptrs = None
 
 P = namedtuple('P', ['addr', 'value'])
 
-def parse_input(input_str):
+def aoc5_parse_input(input_str):
     global _program
     global _program_0
     _program = [int(i) for i in input_str.strip().split(',')]
@@ -124,8 +122,6 @@ def reset():
     _halt = False
     _suspend = False
     set_ptr(0)
-    _program_input = None
-    _program_output = None
 
 def reset_feedback():
     global _programs
@@ -155,32 +151,32 @@ def run_program(program_input):
     return _program_output
 
 def run_program_feedback(n, program_input):
-    global _program_input
-    global _program
-    global _suspend
     reset()
+    init_program(n, program_input)
+    while not _halt and not _suspend:
+        run_ins()
+    if _suspend:
+        save_program(n)
+    assert(_ptr <= len(_program))
+    return _program_output, _halt
+
+def init_program(n, program_input):
+    global _program_input
     if n in _programs:
         #print("---restore %d" % n)
-        restore(n)
-        assert(len(program_input) == 1)
-        _program_input.append(program_input[0])
+        restore_program(n)
+        assert(len(program_input) == 1)  # signal only
     else:
         #print("------init %d" % n)
         _programs_input[n] = _program_input
         _programs[n] = _program
+        assert(len(program_input) == 2)  # phase setting, signal
     _program_input = program_input
-    while not _halt and not _suspend:
-        run_ins()
-    if _suspend:
-        save(n)
-    assert(_ptr <= len(_program))
-    return _program_output, _halt
 
-def save(n):
-    global _programs
+def save_program(n):
     _ptrs[n] = _ptr
 
-def restore(n):
+def restore_program(n):
     global _program
     global _ptr
     global _programs_input
