@@ -28,72 +28,67 @@ def parse_input(input_str):
 def solve_1():
     width = 25
     height = 6
-    layers_data , *ignore = extract_layers(_image_data, width, height)
-    l0 = find_layer_with_fewest_n(layers_data, n=0)
+    layers = extract_layers(_image_data, width, height)
+    l0 = find_layer_with_fewest_n(layers, n=0)
     return count_n_m(l0, n=1, m=2)
 
 def extract_layers(image_data, width, height):
     image_size = width * height
-    layers_data = list()
+    layers = list()
     offset = 0
     while offset < len(image_data):
-        image_layer = image_data[offset:offset + image_size]
-        layers_data.append(image_layer)
-        offset += image_size
-    layers = list()
-    for layer_data in layers_data:
-        layer = split_layer(layer_data, width, height)
+        layer = image_data[offset:offset + image_size]
         layers.append(layer)
-    return layers_data, layers
+        offset += image_size
+    return layers
 
-def split_layer(layer_data, width, height):
-    layer = list()
+def split_layer(layer, width, height):
+    layer_rows = list()
     for j in range(height):
         offset = j * width
-        layer.append(layer_data[offset:offset + width])
-    return layer
+        layer_rows.append(layer[offset:offset + width])
+    return layer_rows
 
-def find_layer_with_fewest_n(layers_data, n):
+def find_layer_with_fewest_n(layers, n):
     min_n = +inf
     ln = -1
     i = 0
-    for l in layers_data:
-        cn = l.count(str(n))
+    for layer in layers:
+        cn = layer.count(str(n))
         if cn < min_n:
             min_n = cn
             ln = i
         i += 1
-    return layers_data[ln]
+    return layers[ln]
 
-def count_n_m(layer_data, n, m):
-    return layer_data.count(str(n)) * layer_data.count(str(m))
+def count_n_m(layer, n, m):
+    return layer.count(str(n)) * layer.count(str(m))
 
 def solve_2():
     width = 25
     height = 6
     image = decode(_image_data, width, height)
-    print_layer(image)
+    print_layer(image, width, height)
     return 
 
 def decode(image_data, width, height):
-    layers_data, layers = extract_layers(_image_data, width, height)
+    layers = extract_layers(_image_data, width, height)
     image_size = width * height
-    decoded_image_data = ''
+    decoded_image = ''
     for pixel in range(image_size):
         color = TRANSPARENT
-        for layer_data in layers_data:
-            lc = layer_data[pixel]
+        for layer in layers:
+            lc = layer[pixel]
             if lc != TRANSPARENT:
                 image_pixel = lc
                 break
-        decoded_image_data += image_pixel
-    decoded_image = split_layer(decoded_image_data, width, height)
+        decoded_image += image_pixel
     return decoded_image
 
-def print_layer(layer):
-    print('\n'.join(layer))
+def print_layer(layer, width, height):
+    layer_rows = split_layer(layer, width, height)
     printable = ''
-    for row in layer:
+    for row in layer_rows:
         printable += row.replace('0', ' ').replace('1', '*') + '\n'
     print()
     print(printable)

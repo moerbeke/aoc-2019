@@ -37,33 +37,32 @@ class TestAoc8(unittest.TestCase):
 
     def test_extract_layers(self):
         input_str = '123456789012'
-        expected_layers_data = ['123456', '789012']
-        expected_layers = [
-                ['123', '456'],
-                ['789', '012'],
-                ]
+        expected_layers = ['123456', '789012']
         image_data = aoc.parse_input(input_str)
-        layers_data, layers = aoc.extract_layers(image_data, width=3, height=2)
-        self.assertEqual(layers_data, expected_layers_data)
+        layers = aoc.extract_layers(image_data, width=3, height=2)
         self.assertEqual(layers, expected_layers)
 
     def test_find_layer_with_fewest_n(self):
-        layers_data = ['123456', '789012']
-        expected_layer_data = layers_data[0]
-        layer_data = aoc.find_layer_with_fewest_n(layers_data, 0)
-        self.assertEqual(layer_data, expected_layer_data)
+        layers = ['123456', '789012']
+        expected_layer = layers[0]
+        layer = aoc.find_layer_with_fewest_n(layers, 0)
+        self.assertEqual(layer, expected_layer)
 
     def test_count_n_m(self):
-        layer_data = '123456'
+        layer = '123456'
         expected_c = 1
-        c = aoc.count_n_m(layer_data, 1, 2)
+        c = aoc.count_n_m(layer, 1, 2)
         self.assertEqual(c, expected_c)
         self.assertEqual(aoc.count_n_m('01123456', 1, 2), 2)
         self.assertEqual(aoc.count_n_m('0112345622', 1, 2), 6)
 
     def test_decode(self):
         input_str = '0222112222120000'
-        expected_image = ['01', '10']
+        expected_image = '0110'
+        """
+        01
+        10
+        """
         image_data = aoc.parse_input(input_str)
         self.assertEqual(aoc.decode(image_data, 2, 2), expected_image)
 
