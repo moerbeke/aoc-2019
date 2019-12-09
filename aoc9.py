@@ -240,13 +240,6 @@ def read_parameters(modal_op_code, n_params):
         params.append(get_modal_param(modes[n]))
     return params
 
-def get_from_ptr():
-    try:
-        param = _program_ptr
-    except KeyError:
-        param = 0
-    return param
-
 def get_modal_param(p_mode):
     if p_mode == MODE_POSITION:
         p_addr = read_addr(_ptr)
