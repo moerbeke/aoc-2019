@@ -63,7 +63,6 @@ def intcode_parse_input(input_str):
     global _program
     global _program_0
     ptr = 0
-    #_program = [int(i) for i in input_str.strip().split(',')]
     program_ins = [int(i) for i in input_str.strip().split(',')]
     _program = OrderedDict()
     for ins in program_ins:
