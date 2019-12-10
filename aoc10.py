@@ -78,66 +78,46 @@ def best_asteroid():
     #print("Best asteroid at %d,%d" % (max_v_asteroids_p.x, max_v_asteroids_p.y))
     return max_v_asteroids, max_v_asteroids_p
 
+def compute_visible_asteroids(p0):
+    x0 = p0.x
+    y0 = p0.y
+    n = 0
+    # On the right
+    n += check_range(p0, range(x0+1, _mx), range(y0, y0+1))
+    # Above
+    n += check_range(p0, range(x0, x0+1), range(y0-1, -1, -1))
+    # On the left
+    n += check_range(p0, range(x0-1, -1, -1), range(y0, y0+1))
+    # Below
+    n += check_range(p0, range(x0, x0+1), range(y0+1, _my))
+    # Bottom-right
+    n += check_range(p0, range(x0+1, _mx), range(y0+1, _my))
+    # Bottom-left
+    n += check_range(p0, range(x0-1, -1, -1), range(y0+1, _my))
+    # Top-right
+    n += check_range(p0, range(x0+1, _mx), range(y0-1, -1, -1))
+    # Top-left
+    n += check_range(p0, range(x0-1, -1, -1), range(y0-1, -1, -1))
+    return n
+
+def check_range(p0, rx, ry):
+    x0 = p0.x
+    y0 = p0.y
+    n = 0
+    for x in rx:
+        for y in ry:
+            d = atan2(-y+y0, x-x0)
+            if not d in _dir_asteroids[p0]:
+                _dir_asteroids[p0][d] = list()
+            n += check_asteroid(P(x,y), p0, d)
+    return n
+
 def check_asteroid(p, p0, d):
     n = 0
     if is_asteroid(p):
         if len(_dir_asteroids[p0][d]) == 0:
             n = 1
         _dir_asteroids[p0][d].append(p)
-    return n
-
-def compute_visible_asteroids(p0):
-    x0 = p0.x
-    y0 = p0.y
-    n = 0
-    # On the right
-    d = 0
-    _dir_asteroids[p0][d] = list()
-    for x in range(x0+1, _mx):
-        n += check_asteroid(P(x,y0), p0, d)
-    # Above
-    d = pi/2
-    _dir_asteroids[p0][d] = list()
-    for y in range(y0-1, -1, -1):
-        n += check_asteroid(P(x0,y), p0, d)
-    # On the left
-    d = +pi
-    _dir_asteroids[p0][d] = list()
-    for x in range(x0-1, -1, -1):
-        n += check_asteroid(P(x,y0), p0, d)
-    # Below
-    d = -pi/2
-    _dir_asteroids[p0][d] = list()
-    for y in range(y0+1, _my):
-        n += check_asteroid(P(x0,y), p0, d)
-    # Bottom-right
-    for x in range(x0+1, _mx):
-        for y in range(y0+1, _my):
-            d = atan2(-y+y0, x-x0)
-            if not d in _dir_asteroids[p0]:
-                _dir_asteroids[p0][d] = list()
-            n += check_asteroid(P(x,y), p0, d)
-    # Bottom-left
-    for x in range(x0-1, -1, -1):
-        for y in range(y0+1, _my):
-            d = atan2(-y+y0, x-x0)
-            if not d in _dir_asteroids[p0]:
-                _dir_asteroids[p0][d] = list()
-            n += check_asteroid(P(x,y), p0, d)
-    # Top-right
-    for x in range(x0+1, _mx):
-        for y in range(y0-1, -1, -1):
-            d = atan2(-y+y0, x-x0)
-            if not d in _dir_asteroids[p0]:
-                _dir_asteroids[p0][d] = list()
-            n += check_asteroid(P(x,y), p0, d)
-    # Top-left
-    for x in range(x0-1, -1, -1):
-        for y in range(y0-1, -1, -1):
-            d = atan2(-y+y0, x-x0)
-            if not d in _dir_asteroids[p0]:
-                _dir_asteroids[p0][d] = list()
-            n += check_asteroid(P(x,y), p0, d)
     return n
 
 def is_asteroid(p):
