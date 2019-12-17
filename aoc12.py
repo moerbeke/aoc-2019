@@ -13,6 +13,7 @@ day = 12
 ########################################################################
 
 from collections import namedtuple
+from blist import blist
 
 C = namedtuple('C', ['x', 'y', 'z'])
 
@@ -21,7 +22,7 @@ _moon_coords_0 = None
 class Moon:
 
     def __init__(self, p):
-        self.p = p
+        self.p = C(p.x, p.y, p.z)
         self.v = C(0,0,0)
 
     def decr_vx(self):
@@ -78,16 +79,11 @@ def solve_1():
     return energy(moons)
 
 def solve_2():
-    moons = reset()
-    steps = 0
-    states_x = list()
-    state_x = [m.p.x for m in moons] + [m.v.x for m in moons]
-    while not state_x in states_x:
-        states_x.append(state_x)
-        step(moons)
-        steps += 1
-        state_x = [m.p.x for m in moons] + [m.v.x for m in moons]
-    return steps
+    #find_cycle(energy)
+    #find_cycle(get_state_x)
+    #find_cycle(get_state_y)
+    #find_cycle(get_state_z)
+    return
 
 def simulate(moons, steps):
     for i in range(steps):
@@ -126,6 +122,38 @@ def apply_velocity(moon):
 
 def energy(moons):
     return sum([m.energy() for m in moons])
+
+def find_cycle(state_getter):
+    moons = reset()
+    states = blist()
+    state = state_getter(moons)
+    steps = 0
+    while not state in states:
+        states.append(state)
+        step(moons)
+        state = state_getter(moons)
+        steps += 1
+        if steps % 1000 == 0:
+            print(steps)
+    offset = states.index(state)
+    period = len(states) - offset
+    assert(states[offset] == state)
+    print(state)
+    for i in range(period):
+        step(moons)
+        state = state_getter(moons)
+        print(state)
+    print(offset, period)
+    assert(states[offset] == state_getter(moons))
+
+def get_state_x(moons):
+    return [m.p.x for m in moons] + [m.v.x for m in moons]
+
+def get_state_y(moons):
+    return [m.p.y for m in moons] + [m.v.y for m in moons]
+
+def get_state_z(moons):
+    return [m.p.z for m in moons] + [m.v.z for m in moons]
 
 ########################################################################
 # main
