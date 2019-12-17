@@ -40,14 +40,6 @@ def parse_input(input_str):
     _csv_program = input_str.strip()
 
 def solve_1():
-    computer = intcode.IntcodeComputer()
-    computer.load_program(_csv_program)
-    computer.reset()
-    computer.push_input(1)
-    halt_int, input_int, output_int = computer.run_program()
-    return computer.pop_output()
-
-def solve_1():
     return count_panels_to_paint()
 
 def solve_2():
