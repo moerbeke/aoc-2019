@@ -19,6 +19,10 @@ C = namedtuple('C', ['x', 'y', 'z'])
 
 _moon_coords_0 = None
 
+X_AXIS = 0
+Y_AXIS = 1
+Z_AXIS = 2
+
 class Moon:
 
     def __init__(self, p):
@@ -98,9 +102,9 @@ def solve_1():
 
 def solve_2():
     moons = reset()
-    x = find_repeated_state_x(moons)
-    y = find_repeated_state_y(moons)
-    z = find_repeated_state_z(moons)
+    x = find_repeated_state_(X_AXIS, moons)
+    y = find_repeated_state_(Y_AXIS, moons)
+    z = find_repeated_state_(Z_AXIS, moons)
     xy = abs(x*y) // math.gcd(x, y)
     return abs(xy*z) // math.gcd(xy, z)
 
@@ -108,27 +112,11 @@ def simulate(moons, steps):
     for i in range(steps):
         step(moons)
 
-def find_repeated_state_x(moons):
-    state_0 = get_state_x(moons)
+def find_repeated_state_(axis, moons):
+    state_0 = _get_state[axis](moons)
     for i in range(1000000):
-        step_x(moons)
-        state = get_state_x(moons)
-        if state == state_0:
-            return i + 1
-
-def find_repeated_state_y(moons):
-    state_0 = get_state_y(moons)
-    for i in range(1000000):
-        step_y(moons)
-        state = get_state_y(moons)
-        if state == state_0:
-            return i + 1
-
-def find_repeated_state_z(moons):
-    state_0 = get_state_z(moons)
-    for i in range(1000000):
-        step_z(moons)
-        state = get_state_z(moons)
+        step_(axis, moons)
+        state = _get_state[axis](moons)
         if state == state_0:
             return i + 1
 
@@ -140,29 +128,13 @@ def step(moons):
     for i in range(0, n_moons):
         apply_velocity(moons[i])
 
-def step_x(moons):
+def step_(axis, moons):
     n_moons = len(moons)
     for i in range(0, n_moons-1):
         for j in range(i+1, n_moons):
-            apply_gravity_x(moons[i], moons[j])
+            _apply_gravity[axis](moons[i], moons[j])
     for i in range(0, n_moons):
-        apply_velocity_x(moons[i])
-
-def step_y(moons):
-    n_moons = len(moons)
-    for i in range(0, n_moons-1):
-        for j in range(i+1, n_moons):
-            apply_gravity_y(moons[i], moons[j])
-    for i in range(0, n_moons):
-        apply_velocity_y(moons[i])
-
-def step_z(moons):
-    n_moons = len(moons)
-    for i in range(0, n_moons-1):
-        for j in range(i+1, n_moons):
-            apply_gravity_z(moons[i], moons[j])
-    for i in range(0, n_moons):
-        apply_velocity_z(moons[i])
+        _apply_velocity[axis](moons[i])
 
 def apply_gravity(m1, m2):
     apply_gravity_x(m1, m2)
@@ -216,6 +188,21 @@ def get_state_y(moons):
 
 def get_state_z(moons):
     return [m.p.z for m in moons] + [m.v.z for m in moons]
+
+_get_state = {
+        X_AXIS: get_state_x,
+        Y_AXIS: get_state_y,
+        Z_AXIS: get_state_z}
+
+_apply_gravity = {
+        X_AXIS: apply_gravity_x,
+        Y_AXIS: apply_gravity_y,
+        Z_AXIS: apply_gravity_z}
+
+_apply_velocity = {
+        X_AXIS: apply_velocity_x,
+        Y_AXIS: apply_velocity_y,
+        Z_AXIS: apply_velocity_z}
 
 ########################################################################
 # main
