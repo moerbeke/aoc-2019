@@ -106,10 +106,8 @@ class IntcodeComputer:
     def op_output(self, modal_op_code):
         a, *ignore = self.read_parameters(modal_op_code, 1)
         if a.addr is None:
-            #print("diagnostic code: %d" % a.value)
             self._program_output.append(a.value)
         else:
-            #print(">>> output: %d" % a.value)
             self._program_output.append(a.value)
         self._output_interrupt = True
         self.incr_pc()
@@ -203,6 +201,9 @@ class IntcodeComputer:
         except KeyError:
             param = 0
         return param
+
+    def write_addr(self, addr, value):
+        self._program[addr] = value
 
     def get_op_code(self, modal_op_code):
         n = modal_op_code

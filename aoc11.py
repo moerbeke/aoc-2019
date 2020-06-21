@@ -60,6 +60,7 @@ def run_robot_sw(computer, init_color):
     direction = UP
     next_color = init_color
     while not halt_int:
+        #halt_int, input_int, output_int = computer.run_program(next_color)
         computer.push_input(next_color)
         halt_int, input_int, output_int = computer.run_program()
         assert(not input_int)
