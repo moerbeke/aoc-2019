@@ -19,15 +19,17 @@ Reaction = namedtuple('Reaction', ['output', 'inputs'])
 
 _target_input_ch = 'ORE'
 _target_input_n = None
+_reactions_0 = None
+_remains_0 = None
 _reactions = None
 _remains = None
 
 def parse_input(input_str):
-    global _reactions
-    global _remains
-    _reactions = dict()
-    _remains = dict()
-    _remains[_target_input_ch] = 0
+    global _reactions_0
+    global _remains_0
+    _reactions_0 = dict()
+    _remains_0 = dict()
+    _remains_0[_target_input_ch] = 0
     for line in input_str.strip().split('\n'):
         inputs, output = line.strip().split('=>')
         inputs = inputs.strip().split(',')
@@ -35,12 +37,16 @@ def parse_input(input_str):
         inputs = [Ch(int(i[0]), i[1]) for i in inputs]
         output = output.split()
         output = Ch(int(output[0]), output[1])
-        _reactions[output.ch] = {'output': output, 'inputs': inputs}
-        _remains[output.ch] = 0
+        _reactions_0[output.ch] = {'output': output, 'inputs': inputs}
+        _remains_0[output.ch] = 0
 
 def reset():
     global _target_input_n
+    global _reactions
+    global _remains
     _target_input_n = 0
+    _reactions = _reactions_0.copy()
+    _remains = _remains_0.copy()
 
 def solve_1():
     reset()
@@ -91,7 +97,24 @@ def compute_scale(target, base):
     return scale
 
 def solve_2():
-    return 
+    # Approach: binary search of the solution, based on the algorithm for Part 1.
+    available_ORE = 1e+12
+    fuel_lower_bound = 1  # known from Part 1
+    fuel_upper_bound = 3628800  # proven true: requires 1106573746307 ~= 1.1e+12
+    fuel_upper_bound = 3628800*int(1e+12)  # test cases require more
+    max_fuel = 0
+    while fuel_upper_bound - fuel_lower_bound > 1:
+        fuel_range = fuel_upper_bound + fuel_lower_bound
+        target_fuel = (fuel_range + (fuel_range % 2)) // 2
+        target_fuel = fuel_range // 2
+        reset()
+        compute_input_amount(Ch(target_fuel, 'FUEL'))
+        if _target_input_n >= available_ORE:
+            fuel_upper_bound = target_fuel
+        else:
+            fuel_lower_bound = target_fuel
+            max_fuel = fuel_lower_bound
+    return max_fuel
 
 ########################################################################
 # main
