@@ -40,6 +40,10 @@ _map = None
 _d_map = None
 _p0 = P(0,0)
 _droid_position = _p0
+_oxygen_position = None
+_e_map = None
+
+EXPANDABLE = -1
 
 class FoundInterrupt(Exception):
     pass
@@ -52,7 +56,7 @@ def solve_1():
     return find_oxygen_distance()
 
 def solve_2():
-    return
+    return compute_expansion_time()
 
 def find_oxygen_distance():
     '''
@@ -206,6 +210,8 @@ def scan_around(source_p):
             _d_map[p] = next_d
             run_repair_droid_cycle(reverse_dir(cmd))
             oxygen_found = True
+            global _oxygen_position
+            _oxygen_position = p
         else:
             assert(False)
     return oxygen_found
@@ -358,6 +364,105 @@ def get_borders():
         elif p.y > y2:
             y2 = p.y
     return x1, y1, x2, y2
+
+def scan_position(source_p):
+    oxygen_found = False
+    next_d = _d_map[source_p] + 1
+    points_to_scan = [P(source_p.x,source_p.y-1), P(source_p.x,source_p.y+1), P(source_p.x-1,source_p.y), P(source_p.x+1,source_p.y)]
+    points_to_scan = [p for p in points_to_scan if not p in _d_map]
+    for p in points_to_scan:
+        cmd = get_dir(source_p, p)
+        status_code = run_repair_droid_cycle(cmd)
+        if status_code == ST_WALL:
+            add_map(p, WALL)
+            _d_map[p] = inf
+        elif status_code == ST_PATH:
+            add_map(p, PATH)
+            _d_map[p] = next_d
+            run_repair_droid_cycle(reverse_dir(cmd))
+        elif status_code == ST_OXYGEN:
+            add_map(p, OXYGEN)
+            _d_map[p] = next_d
+            run_repair_droid_cycle(reverse_dir(cmd))
+            oxygen_found = True
+            global _oxygen_position
+            _oxygen_position = p
+        else:
+            assert(False)
+    return oxygen_found
+
+def compute_expansion_time():
+    global _computer
+    _computer = intcode.IntcodeComputer()
+    _computer.load_program(_csv_program)
+    _computer.reset()
+    # Complete the map
+    global _map
+    global _e_map
+    _map = dict()
+    _e_map = dict()
+    _map[_p0] = PATH
+    _e_map[_p0] = 0
+    extend_map(_p0, 0)    
+    print_map()
+    # Reset distance map
+    for p in _e_map:
+        if _e_map[p] < inf:
+            _e_map[p] = EXPANDABLE
+    _e_map[_oxygen_position] = 0
+    # Expand oxygen
+    print(_oxygen_position)
+    expand_oxygen(_oxygen_position, 0)
+    # Make sure the map has been completely expanded
+    for p in _e_map:
+        assert(_e_map[p] != EXPANDABLE)
+    # Obtain expansion time
+    expansion_time = 0
+    for p in _e_map:
+        if _e_map[p] < inf:
+            expansion_time = max(expansion_time, _e_map[p])
+    return expansion_time
+
+def extend_map(current_point, d):
+    global _oxygen_position
+    d += 1
+    next_points_to_scan = [
+            P(current_point.x,current_point.y-1),
+            P(current_point.x,current_point.y+1), 
+            P(current_point.x-1,current_point.y), 
+            P(current_point.x+1,current_point.y)]
+    next_points_to_scan = [p for p in next_points_to_scan if not p in _e_map]
+    for p in next_points_to_scan:
+        cmd = get_dir(current_point, p)
+        status_code = run_repair_droid_cycle(cmd)
+        if status_code == ST_WALL:
+            _map[p] = WALL
+            _e_map[p] = inf
+        elif status_code == ST_PATH:
+            _map[p] = PATH
+            _e_map[p] = d
+            extend_map(p, d)
+            run_repair_droid_cycle(reverse_dir(cmd))
+        elif status_code == ST_OXYGEN:
+            _oxygen_position = p
+            _map[p] = OXYGEN
+            _e_map[p] = d
+            extend_map(p, d)
+            run_repair_droid_cycle(reverse_dir(cmd))
+        else:
+            assert(False)
+
+def expand_oxygen(current_point, current_time):
+    t = current_time + 1
+    next_points_to_expand = [
+            P(current_point.x,current_point.y-1),
+            P(current_point.x,current_point.y+1), 
+            P(current_point.x-1,current_point.y), 
+            P(current_point.x+1,current_point.y)]
+    next_points_to_expand = [p for p in next_points_to_expand if p in _e_map and _e_map[p] == EXPANDABLE]
+    for p in next_points_to_expand:
+        _e_map[p] = t
+        expand_oxygen(p, t)
 
 ########################################################################
 # main
